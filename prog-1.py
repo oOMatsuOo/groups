@@ -41,12 +41,6 @@ def dessiner_vecteur(fenetre, couleur, origine, vecteur):
         p3 = deplacer_pol(p2, B, alpha - (math.pi//2))
         p5 = deplacer_pol(p6, B, alpha + (math.pi//2))
         polygone = [p1, p2, p3, p4, p5, p6, p7]
-    else:
-        p3 = origine + vecteur
-        p1 = deplacer_pol(p3, C, alpha + math.pi)
-        p2 = deplacer_pol(p1, A+B, alpha - (math.pi//2))
-        p4 = deplacer_pol(p1, A+B, alpha + (math.pi//2))
-        polygone = [p1, p2, p3, p4]
 
     pygame.draw.polygon(fenetre, couleur, polygone)
 
@@ -91,12 +85,24 @@ def dessiner_champ():
             vecteur = calculer_champ(x, y)
             if vecteur != None:
                 norme_vecteur = distance(vecteur[0], vecteur[1], 0, 0)
+                mu = math.sqrt(1000 * norme_vecteur)
                 if norme_vecteur > 10e-10:
                     vecteur[0] *= 40/norme_vecteur
                     vecteur[1] *= 40/norme_vecteur
-                    dessiner_vecteur(fenetre, BLEU, (x, y), vecteur)
-
-
+                    if mu>=0 and mu <=8:
+                        couleur = (255, 255*mu/8, 0)
+                    elif mu>8 and mu<=16:
+                        mu = mu % 8
+                        couleur = (255 - 255 * mu/8, 255, 255 * mu/8)
+                    elif mu>16 and mu<=24:
+                        mu = mu % 8
+                        couleur = (0, 255 - 255*mu/8,255)
+                    elif mu>24 and mu<=32:
+                        mu = mu%8
+                        couleur = (255*mu/8, 0, 255)
+                    elif mu>32:
+                        couleur = (255, 0, 255)
+                    dessiner_vecteur(fenetre, couleur, [x -vecteur[0]/2, y-vecteur[1]/2], vecteur)
 
 # Initialisation
 
@@ -109,8 +115,8 @@ horloge = pygame.time.Clock()
 couleur_fond = BLEUCLAIR
 
 objets = []
-ajouter_objet(800, 200, 0.000001)
-ajouter_objet(800, 700, -0.000001)
+ajouter_objet(800, 200, 10e-8)
+ajouter_objet(800, 700, -10e-8)
 
 # Dessin
 
