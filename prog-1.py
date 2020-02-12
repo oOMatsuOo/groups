@@ -9,7 +9,7 @@ BLEU = (0, 0, 255)
 ROUGE = (255, 0, 0)
 NOIR = (0, 0, 0)
 
-K = 8.9876 * 10e9
+K = 8.9876 * 1e9
 
 A = 2
 B = 5
@@ -115,8 +115,8 @@ horloge = pygame.time.Clock()
 couleur_fond = BLEUCLAIR
 
 objets = []
-ajouter_objet(800, 200, 10e-8)
-ajouter_objet(800, 700, -10e-8)
+ajouter_objet(800, 200, 1e-6)
+ajouter_objet(800, 700, -1e-6)
 
 # Dessin
 
