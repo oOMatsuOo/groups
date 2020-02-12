@@ -1,6 +1,6 @@
-Russe Cyril
-Randaxhe Martin
-Van Muysewinkel Kieran
+#Russe Cyril
+#Randaxhe Martin
+#Van Muysewinkel Kieran
 
 import math
 import pygame
@@ -38,7 +38,7 @@ def ajouter_objet(x, y, q):
 
 def retirer_objet(x,y):
     for l in objets:
-        if l[0] <= x + 5 and l[0] >= x - 5:
+        if l[0] <= x + 5 and l[0] >= x - 5 and y <= l[1] + 5 and y >= l[1] - 5:
             objets.remove(l)
 
 def distance(x1, y1, x2, y2):
