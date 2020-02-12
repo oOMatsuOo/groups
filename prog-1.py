@@ -64,11 +64,17 @@ def calculer_champ(x, y):
     vecteur = [0, 0]
     angle = 0
     for l in objets:
-        if x!=l[0] and y!=l[1]:
-            norme_vecteur = K * math.fabs(l[2])/ distance(l[0], l[1], x, y)
-            angle = math.atan2(-l[1] + y, -l[0] + x)
-            vecteur[0] += math.cos(angle) / norme_vecteur
-            vecteur[1] += math.sin(angle) / norme_vecteur
+        if y == l[1] and x == l[0]:
+            return None
+        if y!=l[1] or x!=l[0]:
+            norme_vecteur = K * abs(l[2])/(distance(l[0], l[1], x, y)**2)
+            angle = math.atan2(y - l[1],x - l[0])
+            if l[2]>0:
+                vecteur[0] += math.cos(angle) * norme_vecteur
+                vecteur[1] += math.sin(angle) * norme_vecteur
+            else:
+                vecteur[0] -= math.cos(angle) * norme_vecteur
+                vecteur[1] -= math.sin(angle) * norme_vecteur
     return vecteur
 
 # Dessin
@@ -83,11 +89,12 @@ def dessiner_champ():
     for x in range(-50, 1650, 50):
         for y in range(-50, 950, 50):
             vecteur = calculer_champ(x, y)
-            norme_vecteur = distance(vecteur[0], vecteur[1], 0, 0)
-            if norme_vecteur > 10e-10:
-                vecteur[0] *= 40/norme_vecteur
-                vecteur[1] *= 40/norme_vecteur
-                dessiner_vecteur(fenetre, BLEU, (x, y), vecteur)
+            if vecteur != None:
+                norme_vecteur = distance(vecteur[0], vecteur[1], 0, 0)
+                if norme_vecteur > 10e-10:
+                    vecteur[0] *= 40/norme_vecteur
+                    vecteur[1] *= 40/norme_vecteur
+                    dessiner_vecteur(fenetre, BLEU, (x, y), vecteur)
 
 
 
