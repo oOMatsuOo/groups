@@ -75,7 +75,8 @@ def creer_mobile(charge,position):
     mobile[1] = position[1]
 
 def mettre_a_jour_mobile(t):
-
+    if mobile_est_present:
+        
 
 
 # Dessin
@@ -126,9 +127,10 @@ ajouter_objet(800, 700, -1e-6)
 fenetre.fill(couleur_fond)
 dessiner_objet()
 mobile = initialiser_mobile()
-
+t = 0
 
 while True:
+    temps_maintenant = pygame.time.get_ticks()
     for evenement in pygame.event.get():
         if evenement.type == pygame.QUIT:
             pygame.quit()
@@ -141,10 +143,9 @@ while True:
             elif evenement.key == pygame.K_n:
                 creer_mobile(-1e-7,pygame.mouse.get_pos())
     
-    temps_maintenant = pygame.time.get_ticks()
-
     for i in range(t,temps_maintenant - 1):
         mettre_a_jour_mobile(i)
+    t = pygame.time.get_ticks()
 
     fenetre.fill(couleur_fond)
     dessiner_objet()
