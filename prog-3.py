@@ -27,12 +27,6 @@ images_par_seconde = 25
 
 # Fonctions
 
-def deplacer_pol(point, distance, orientation):
-    x, y = point
-    xf = x + (math.cos(orientation)*distance)
-    yf = y + (math.sin(orientation)*distance)
-    return (xf, yf)
-
 def ajouter_objet(x, y, q):
     objets.append((x, y, q))
 
@@ -62,6 +56,24 @@ def calculer_champ(x, y):
                 vecteur[1] -= math.sin(angle) * norme_vecteur
     return vecteur
 
+def initialiser_mobile():
+    global mobile_est_present
+
+    mobile_est_present = False
+
+    mobile = [0,0,0,0,1] # 0 : X; 1 : Y; 2 : Vx; 3 : Vy; 4 : charge
+
+    return mobile
+
+def creer_mobile(charge,position):
+    global mobile_est_present, mobile
+
+    mobile_est_present = True
+    print(mobile)
+    mobile[4] = charge
+    mobile[0] = position[0]
+    mobile[1] = position[1]
+
 # Dessin
 
 def dessiner_objet():
@@ -71,47 +83,13 @@ def dessiner_objet():
         else:
             pygame.draw.circle(fenetre, NOIR, (l[0], l[1]), 10)
 
-def dessiner_champ():
-    for x in range(-50, 1650, 50):
-        for y in range(-50, 950, 50):
-            vecteur = calculer_champ(x, y)
-            if vecteur != None:
-                norme_vecteur = distance(vecteur[0], vecteur[1], 0, 0)
-                mu = math.sqrt(1000 * norme_vecteur)
-                if norme_vecteur > 10e-10:
-                    vecteur[0] *= 40/norme_vecteur
-                    vecteur[1] *= 40/norme_vecteur
-                    if mu>=0 and mu <=8:
-                        couleur = (255, 255*mu/8, 0)
-                    elif mu>8 and mu<=16:
-                        mu = mu % 8
-                        couleur = (255 - 255 * mu/8, 255, 255 * mu/8)
-                    elif mu>16 and mu<=24:
-                        mu = mu % 8
-                        couleur = (0, 255 - 255*mu/8,255)
-                    elif mu>24 and mu<=32:
-                        mu = mu%8
-                        couleur = (255*mu/8, 0, 255)
-                    elif mu>32:
-                        couleur = (255, 0, 255)
-                    dessiner_vecteur(fenetre, couleur, [x -vecteur[0]/2, y-vecteur[1]/2], vecteur)
+def dessiner_mobile():
+    if mobile[4] >= 0:
+        couleur = ROUGE
+    else:
+        couleur = NOIR
 
-def dessiner_vecteur(fenetre, couleur, origine, vecteur):
-    alpha = math.atan2(vecteur[1], vecteur[0])
-    norme_vecteur = math.sqrt(vecteur[0]**2 + vecteur[1]**2)
-    if norme_vecteur >= C:
-        p4 = (origine[0] + vecteur[0], origine[1] + vecteur[1])
-        p1 = deplacer_pol(origine, A, alpha - (math.pi//2))
-        p7 = deplacer_pol(origine, A, alpha + (math.pi//2))
-        p2 = deplacer_pol(p1, norme_vecteur - C, alpha)
-        p6 = deplacer_pol(p7, norme_vecteur - C, alpha)
-        p3 = deplacer_pol(p2, B, alpha - (math.pi//2))
-        p5 = deplacer_pol(p6, B, alpha + (math.pi//2))
-        polygone = [p1, p2, p3, p4, p5, p6, p7]
-
-    pygame.draw.polygon(fenetre, couleur, polygone)
-
-    return
+    pygame.draw.circle(fenetre,couleur, (mobile[0], mobile[1]), 10, 4)
 
 # Intéraction
 
@@ -143,7 +121,8 @@ ajouter_objet(800, 700, -1e-6)
 
 fenetre.fill(couleur_fond)
 dessiner_objet()
-dessiner_champ()
+mobile = initialiser_mobile()
+
 
 while True:
     for evenement in pygame.event.get():
@@ -152,10 +131,15 @@ while True:
             sys.exit()
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
             traiter_souris(evenement)
+        elif evenement.type == pygame.KEYDOWN:
+            if pygame.key == pygame.K_p:
+                creer_mobile(1e-7,pygame.mouse.get_pos())
+            elif pygame.key == pygame.K_n:
+                creer_mobile(-1e-7,pygame.mouse.get_pos())
             
     fenetre.fill(couleur_fond)
     dessiner_objet()
-    dessiner_champ()
+    dessiner_mobile()
 
     pygame.display.flip()
     horloge.tick(images_par_seconde)

@@ -115,8 +115,10 @@ horloge = pygame.time.Clock()
 couleur_fond = BLEUCLAIR
 
 objets = []
-ajouter_objet(800, 200, 1e-6)
-ajouter_objet(800, 700, -1e-6)
+ajouter_objet(400, 200, 1e-6)
+ajouter_objet(400, 700, -1e-6)
+ajouter_objet(1200, 200, -1e-6)
+ajouter_objet(1200, 700, 1e-6)
 
 # Dessin
 
