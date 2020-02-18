@@ -74,6 +74,10 @@ def creer_mobile(charge,position):
     mobile[0] = position[0]
     mobile[1] = position[1]
 
+def mettre_a_jour_mobile(t):
+
+
+
 # Dessin
 
 def dessiner_objet():
@@ -132,11 +136,16 @@ while True:
         elif evenement.type == pygame.MOUSEBUTTONDOWN:
             traiter_souris(evenement)
         elif evenement.type == pygame.KEYDOWN:
-            if pygame.key == pygame.K_p:
+            if evenement.key == pygame.K_p:
                 creer_mobile(1e-7,pygame.mouse.get_pos())
-            elif pygame.key == pygame.K_n:
+            elif evenement.key == pygame.K_n:
                 creer_mobile(-1e-7,pygame.mouse.get_pos())
-            
+    
+    temps_maintenant = pygame.time.get_ticks()
+
+    for i in range(t,temps_maintenant - 1):
+        mettre_a_jour_mobile(i)
+
     fenetre.fill(couleur_fond)
     dessiner_objet()
     dessiner_mobile()
