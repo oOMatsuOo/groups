@@ -20,6 +20,8 @@ A = 2
 B = 5
 C = 20
 
+#Ceci est un commentaire pourri
+
 MASSE_MOBILE = 1e-10
 
 # Paramètres
