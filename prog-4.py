@@ -76,6 +76,13 @@ def dessiner_afficheur(sortie_CD4511):
         i = i + 1
     return
 
+def dessiner_cercle():
+    couleur = NOIR
+    if sig_horloge == 1:
+        couleur = ROUGE
+    
+    pygame.draw.circle(fenetre,couleur, pos_afficheur, 10)
+
 def composant_CD4511(entree):
     tdv = [[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]]
 
@@ -204,6 +211,7 @@ while True:
     sortie_CD4511 = composant_CD4511(sortie_memorisee())
     dessiner_afficheur(sortie_CD4511)
     dessiner_arduino(sortie_memorisee(), sortie_CD4511, sortie_bouton)
+    dessiner_cercle()
 
     pygame.display.flip()
     horloge.tick(images_par_seconde)
