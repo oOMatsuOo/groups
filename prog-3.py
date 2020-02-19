@@ -98,6 +98,8 @@ def mettre_a_jour_mobile(t):
     mobile[1]+= mobile[3] * delta_t
     temps_prec = t
 
+def calculer_energie_potentiel(x, y, charge):
+    return
     
 
 # Dessin
