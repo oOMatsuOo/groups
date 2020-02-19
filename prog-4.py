@@ -20,7 +20,7 @@ ROUGE = (255, 0, 0)
 
 ### Variables Globales
 
-variable_memorisee = 8
+variable_memorisee = 0
 
 
 def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_bouton):
@@ -120,9 +120,7 @@ def clique_bouton():
     
     if souris_pos[0] >= pos_centre_bouton[0]-rayon_bouton and souris_pos[0] <= pos_centre_bouton[0] + rayon_bouton:
         if souris_pos[1] >= pos_centre_bouton[1]-rayon_bouton and souris_pos[1] <= pos_centre_bouton[1] + rayon_bouton:
-            variable_memorisee += 1
-            if variable_memorisee > 9:
-                variable_memorisee = 0
+            variable_memorisee = (variable_memorisee + 1) % 10
             return 1
     return 0
 
@@ -148,6 +146,8 @@ rayon_bouton = 18
 pin_arduino = (pos_arduino[0] + 279, pos_arduino[1] + 353)
 pin_bouton = (pos_bouton[0] + 13, pos_bouton[1] + 13)
 
+sig_horloge = 0
+
 
 ### Programme
 
@@ -159,6 +159,7 @@ fenetre = pygame.display.set_mode(dimensions_fenetre)
 pygame.display.set_caption("Programme 7 segments")
 
 horloge = pygame.time.Clock()
+pygame.time.set_timer(pygame.USEREVENT, 500)
 
 image_afficheur_s = pygame.image.load('images/7_seg_s.png').convert_alpha(fenetre)
 barre_verticale_s = pygame.image.load('images/vertical_s.png').convert_alpha(fenetre)
@@ -188,6 +189,11 @@ while True:
                 sortie_bouton = 1
             else:
                 sortie_bouton = 0
+        elif evenement.type == pygame.USEREVENT:
+            sig_horloge = (sig_horloge + 1) % 2
+            if sig_horloge == 1:
+                variable_memorisee = (variable_memorisee + 1 ) % 10
+
     sortie_bouton = 0
 
     if pygame.mouse.get_pressed()[0]:
