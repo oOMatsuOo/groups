@@ -20,6 +20,8 @@ ROUGE = (255, 0, 0)
 
 ### Variables Globales
 
+variable_memorisee = 7
+
 
 def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_bouton):
     fenetre.blit(image_arduino, pos_arduino)
@@ -55,8 +57,6 @@ def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_bouton):
 
     connexion_bouton(sortie_bouton)
 
-
-
 def dessiner_afficheur(sortie_CD4511):
     positions_barres = [[32, 14], [89, 20], [87, 88], [28, 150],
                         [17, 88], [19, 20], [30, 82]]
@@ -80,11 +80,19 @@ def composant_CD4511(entree):
     return np.array([0, 0, 0, 0, 0, 0, 0])
 
 def sortie_memorisee():
-    return np.array([0, 0, 0, 0])
+
+    val = variable_memorisee
+
+    nmb_bin = [0,0,0,0]
+
+    for i in range (0,3):
+        nmb_bin[i] = (val / 2) % 2
+    nmb_bin.reverse()
+
+    return np.array(nmb_bin)
 
 def gerer_click():
     return 0
-
 
 def connexion_bouton(sortie_bouton):
     return
