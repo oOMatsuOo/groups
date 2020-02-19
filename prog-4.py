@@ -20,7 +20,7 @@ ROUGE = (255, 0, 0)
 
 ### Variables Globales
 
-variable_memorisee = 7
+variable_memorisee = 8
 
 
 def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_bouton):
@@ -77,7 +77,25 @@ def dessiner_afficheur(sortie_CD4511):
     return
 
 def composant_CD4511(entree):
-    return np.array([0, 0, 0, 0, 0, 0, 0])
+    tdv = [[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]]
+
+    tdv[0] = [1,1,1,1,1,1,0]
+    tdv[1] = [0,1,1,0,0,0,0]
+    tdv[2] = [1,1,0,1,1,0,1]
+    tdv[3] = [1,1,1,1,0,0,1]
+    tdv[4] = [0,1,1,0,0,1,1]
+    tdv[5] = [1,0,1,1,0,1,1]
+    tdv[6] = [1,0,1,1,1,1,1]
+    tdv[7] = [1,1,1,0,0,0,0]
+    tdv[8] = [1,1,1,1,1,1,1]
+    tdv[9] = [1,1,1,1,0,1,1]
+
+    nmb = 0
+
+    for i in range(0,4):
+        nmb += entree[i] * 2**abs(i-3)
+        
+    return np.array(tdv[nmb])
 
 def sortie_memorisee():
 
@@ -85,8 +103,10 @@ def sortie_memorisee():
 
     nmb_bin = [0,0,0,0]
 
-    for i in range (0,3):
-        nmb_bin[i] = (val / 2) % 2
+    for i in range (0,4):
+        nmb_bin[i] = (val % 2)
+        val = val // 2
+
     nmb_bin.reverse()
 
     return np.array(nmb_bin)
@@ -94,7 +114,24 @@ def sortie_memorisee():
 def gerer_click():
     return 0
 
+def clique_bouton():
+    global variable_memorisee
+    souris_pos = pygame.mouse.get_pos()
+    
+    if souris_pos[0] >= pos_centre_bouton[0]-rayon_bouton and souris_pos[0] <= pos_centre_bouton[0] + rayon_bouton:
+        if souris_pos[1] >= pos_centre_bouton[1]-rayon_bouton and souris_pos[1] <= pos_centre_bouton[1] + rayon_bouton:
+            variable_memorisee += 1
+            if variable_memorisee > 9:
+                variable_memorisee = 0
+            return 1
+    return 0
+
 def connexion_bouton(sortie_bouton):
+    couleur_ligne = NOIR
+    if sortie_bouton == 1:
+        couleur_ligne = ROUGE
+
+    pygame.draw.line(fenetre,couleur_ligne, pin_arduino, pin_bouton, 6)
     return
 
 ### Paramètre(s)
@@ -146,7 +183,16 @@ while True:
         if evenement.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        elif evenement.type == pygame.MOUSEBUTTONDOWN:
+            if clique_bouton():
+                sortie_bouton = 1
+            else:
+                sortie_bouton = 0
     sortie_bouton = 0
+
+    if pygame.mouse.get_pressed()[0]:
+            sortie_bouton = 1
+
     fenetre.fill(couleur_fond)
 
     sortie_CD4511 = composant_CD4511(sortie_memorisee())
