@@ -101,8 +101,18 @@ def mettre_a_jour_mobile(t):
 def calculer_energie_potentiel(x, y, charge):
     energ_pot = 0
     for l in objets:
-        energ_pot += K * (charge * l[2])/(distance(x, y, l[0], l[1]))
+        if x!=l[0] or y!=l[1]:
+            energ_pot += K * (charge * l[2])/(distance(x, y, l[0], l[1]))
+        else:
+            return 0
     return energ_pot
+
+def calculer_potentiel(x, y):
+    if mobile_est_present:
+        potent = calculer_energie_potentiel(x, y, 1) + K * mobile[4]/distance(x, y, mobile[0], mobile[1])
+    else:
+        potent = calculer_energie_potentiel(x, y, 1)
+    return potent
 
 # Dessin
 
@@ -122,10 +132,18 @@ def dessiner_mobile():
     pygame.draw.circle(fenetre,couleur, (int(mobile[0]), int(mobile[1])), 10, 4)
 
 def affichage_tableau():
+    police = pygame.font.SysFont("monospace", 32)
+
+    pot_elec = calculer_potentiel(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+    texte_pot_elec = "Potentiel souris : {0:.2f} µJ".format(pot_elec)
+    image = police.render(texte_pot_elec, True, NOIR)
+    fenetre.blit(image, (50, 140))
+
+    if not mobile_est_present:
+        return
     ener_pot = calculer_energie_potentiel(mobile[0], mobile[1], mobile[4])*1e6
     ener_cine = (MASSE_MOBILE * distance(0, 0, mobile[2], mobile[3])**2)*1e6/2
     ener_tot = ener_pot + ener_cine
-    police = pygame.font.SysFont("monospace", 32)
 
     texte_ener_pot = "Energie potentielle : {0:.2f} µJ".format(ener_pot)
     texte_ener_cinetique = "Energie cinetique : {0:.2f} µJ".format(ener_cine)
@@ -137,6 +155,8 @@ def affichage_tableau():
     fenetre.blit(image, (50, 80))
     image = police.render(texte_ener_tot, True, NOIR)
     fenetre.blit(image, (50, 110))
+
+    
 
 # Intéraction
 
@@ -199,7 +219,7 @@ while True:
         
     if mobile_est_present:
         dessiner_mobile()
-        affichage_tableau()
+    affichage_tableau()
     temps_precedent = temps_maintenant
     
 
