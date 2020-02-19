@@ -97,8 +97,10 @@ def mettre_a_jour_mobile(t):
     temps_prec = t
 
 def calculer_energie_potentiel(x, y, charge):
-    return
-    
+    energ_pot = 0
+    for l in objets:
+        energ_pot += K * (charge * l[2])/(distance(x, y, l[0], l[1]))
+    return energ_pot
 
 # Dessin
 
@@ -116,6 +118,23 @@ def dessiner_mobile():
         couleur = NOIR
 
     pygame.draw.circle(fenetre,couleur, (int(mobile[0]), int(mobile[1])), 10, 4)
+
+def affichage_tableau():
+    ener_pot = calculer_energie_potentiel(mobile[0], mobile[1], mobile[4])*1e6
+    ener_cine = (MASSE_MOBILE * distance(0, 0, mobile[2], mobile[3])**2)*1e6/2
+    ener_tot = ener_pot + ener_cine
+    police = pygame.font.SysFont("monospace", 32)
+
+    texte_ener_pot = "Energie potentielle : {0:.2f} µJ".format(ener_pot)
+    texte_ener_cinetique = "Energie cinetique : {0:.2f} µJ".format(ener_cine)
+    texte_ener_tot = "Energie totale : {0:.2f} µJ".format(ener_tot)
+
+    image = police.render(texte_ener_pot, True, NOIR)
+    fenetre.blit(image, (50, 50))
+    image = police.render(texte_ener_cinetique, True, NOIR)
+    fenetre.blit(image, (50, 80))
+    image = police.render(texte_ener_tot, True, NOIR)
+    fenetre.blit(image, (50, 110))
 
 # Intéraction
 
@@ -178,6 +197,7 @@ while True:
         
     if mobile_est_present:
         dessiner_mobile()
+        affichage_tableau()
     temps_precedent = temps_maintenant
     
 
