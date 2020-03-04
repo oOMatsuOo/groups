@@ -21,6 +21,10 @@ ROUGE = (255, 0, 0)
 ### Variables Globales
 
 variable_memorisee = 0
+latence_mat = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], 
+               [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
+
 
 
 def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_CD4028, sortie_bouton):
@@ -96,24 +100,42 @@ def dessiner_arduino(sortie_arduino, sortie_CD4511, sortie_CD4028, sortie_bouton
 
 
 def dessiner_afficheur(sortie_CD4511, sortie_CD4028):
+    global latence_mat
     positions_barres = [[32, 14], [89, 20], [87, 88], [28, 150],
                         [17, 88], [19, 20], [30, 82]]
 
     for j in range(0, 6):
         fenetre.blit(image_afficheur_s, (pos_afficheur[0] + j*101, pos_afficheur[1]))
-        if sortie_CD4028[j] == 1:
-            i = 0
-            for barre in positions_barres:
-                if sortie_CD4511[i] == 0:
-                    i = i + 1
-                    continue
-                x_b = j*101 + pos_afficheur[0] + int(round(barre[0]*(image_afficheur_s.get_width()/133)))
-                y_b = pos_afficheur[1] + int(round(barre[1]*(image_afficheur_s.get_height()/192)))
-                if i == 0 or i == 3 or i == 6:
-                    fenetre.blit(barre_horizontale_s, (x_b, y_b))
-                else:
-                    fenetre.blit(barre_verticale_s, (x_b, y_b))
+        # if sortie_CD4028[j] == 1:
+        #     i = 0
+        #     for barre in positions_barres:
+        #         if sortie_CD4511[i] == 0:
+        #             i = i + 1
+        #             continue
+        #         x_b = j*101 + pos_afficheur[0] + int(round(barre[0]*(image_afficheur_s.get_width()/133)))
+        #         y_b = pos_afficheur[1] + int(round(barre[1]*(image_afficheur_s.get_height()/192)))
+        #         if i == 0 or i == 3 or i == 6:
+        #             fenetre.blit(barre_horizontale_s, (x_b, y_b))
+        #         else:
+        #             fenetre.blit(barre_verticale_s, (x_b, y_b))
+        #         i = i + 1
+        # else:
+        i = 0
+        for barre in positions_barres:
+            if latence_mat[j][i] == 0:
                 i = i + 1
+                continue
+            x_b = j*101 + \
+                pos_afficheur[0] + int(round(barre[0]
+                                             * (image_afficheur_s.get_width()/133)))
+            y_b = pos_afficheur[1] + \
+                int(round(barre[1]*(image_afficheur_s.get_height()/192)))
+            if i == 0 or i == 3 or i == 6:
+                fenetre.blit(barre_horizontale_s, (x_b, y_b))
+            else:
+                fenetre.blit(barre_verticale_s, (x_b, y_b))
+            i = i + 1
+
     return
 
 def dessiner_cercle():
@@ -144,19 +166,49 @@ def composant_CD4511(entree):
         
     return np.array(tdv[nmb])
 
-def sortie_memorisee():
+def composant_CD4028(entree):
+    nmb_bin = [0,0,0,0]
+
+    for i in range(0, 4):
+        nmb_bin[i] = entree[i+4]
+    
+    nmb = 0
+    nmb_bin.reverse()
+
+    for i in range(0, 4):
+        nmb += nmb_bin[i] * (2**i)
+
+    tab = [[0],[0],[0],[0],[0],[0],[0]]
+
+    tab[0] = [1,0,0,0,0,0,0]
+    tab[1] = [0,1,0,0,0,0,0]
+    tab[2] = [0,0,1,0,0,0,0]
+    tab[3] = [0,0,0,1,0,0,0]
+    tab[4] = [0,0,0,0,1,0,0]
+    tab[5] = [0,0,0,0,0,1,0]
+    tab[6] = [0,0,0,0,0,0,1]
+
+    return np.array(tab[nmb])
+
+
+def sortie_memorisee(num_afficheur):
 
     val = variable_memorisee
+    val_num = num_afficheur
 
+    numero = [0,0,0,0]
     nmb_bin = [0,0,0,0]
 
     for i in range (0,4):
         nmb_bin[i] = (val % 2)
+        numero[i] = (val_num % 2)
+        val_num = val_num // 2
         val = val // 2
 
+    numero.reverse()
     nmb_bin.reverse()
 
-    return np.array(nmb_bin)
+    return np.array(nmb_bin + numero)
 
 def gerer_click():
     return 0
@@ -207,7 +259,9 @@ fenetre = pygame.display.set_mode(dimensions_fenetre)
 pygame.display.set_caption("Programme 7 segments")
 
 horloge = pygame.time.Clock()
-pygame.time.set_timer(pygame.USEREVENT, 500)
+pygame.time.set_timer(pygame.USEREVENT, 480)
+pygame.time.set_timer(pygame.USEREVENT+1,40)
+num_afficheur = 0
 
 image_afficheur_s = pygame.image.load('images/7_seg_s.png').convert_alpha(fenetre)
 barre_verticale_s = pygame.image.load('images/vertical_s.png').convert_alpha(fenetre)
@@ -241,7 +295,10 @@ while True:
             sig_horloge = (sig_horloge + 1) % 2
             if sig_horloge == 1:
                 variable_memorisee = (variable_memorisee + 1 ) % 10
-
+        elif evenement.type == pygame.USEREVENT + 1:
+            num_afficheur += 1
+            num_afficheur = num_afficheur % 6
+        
     sortie_bouton = 0
 
     if pygame.mouse.get_pressed()[0]:
@@ -249,9 +306,13 @@ while True:
 
     fenetre.fill(couleur_fond)
 
-    dessiner_arduino(np.zeros(8, dtype=int), np.zeros(7, dtype=int),
-                 np.zeros(6, dtype=int), 0)
-    dessiner_afficheur(np.zeros(7, dtype=int), np.zeros(6, dtype=int))
+    sortie_CD4511 = composant_CD4511(sortie_memorisee(num_afficheur))
+    latence_mat[num_afficheur] = sortie_CD4511
+
+    sortie_CD4028 = composant_CD4028(sortie_memorisee(num_afficheur))
+    dessiner_arduino(sortie_memorisee(num_afficheur), sortie_CD4511,
+                 sortie_CD4028, sortie_bouton)
+    dessiner_afficheur(sortie_CD4511,sortie_CD4028)
 
     pygame.display.flip()
     horloge.tick(images_par_seconde)
