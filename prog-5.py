@@ -10,6 +10,7 @@ import math
 import pygame
 import sys
 import numpy as np
+import datetime as dt
 
 ### Constante(s)
 
@@ -106,20 +107,6 @@ def dessiner_afficheur(sortie_CD4511, sortie_CD4028):
 
     for j in range(0, 6):
         fenetre.blit(image_afficheur_s, (pos_afficheur[0] + j*101, pos_afficheur[1]))
-        # if sortie_CD4028[j] == 1:
-        #     i = 0
-        #     for barre in positions_barres:
-        #         if sortie_CD4511[i] == 0:
-        #             i = i + 1
-        #             continue
-        #         x_b = j*101 + pos_afficheur[0] + int(round(barre[0]*(image_afficheur_s.get_width()/133)))
-        #         y_b = pos_afficheur[1] + int(round(barre[1]*(image_afficheur_s.get_height()/192)))
-        #         if i == 0 or i == 3 or i == 6:
-        #             fenetre.blit(barre_horizontale_s, (x_b, y_b))
-        #         else:
-        #             fenetre.blit(barre_verticale_s, (x_b, y_b))
-        #         i = i + 1
-        # else:
         i = 0
         for barre in positions_barres:
             if latence_mat[j][i] == 0:
@@ -192,10 +179,22 @@ def composant_CD4028(entree):
 
 
 def sortie_memorisee(num_afficheur):
-
-    val = variable_memorisee
+    heure = dt.datetime.now().hour
+    minute = dt.datetime.now().minute
+    seconde = dt.datetime.now().second
     val_num = num_afficheur
-
+    if val_num==0:
+        val = heure//10
+    elif val_num==1:
+        val = heure%10
+    elif val_num==2:
+        val = minute//10
+    elif val_num==3:
+        val = minute%10
+    elif val_num==4:
+        val = seconde//10
+    elif val_num==5:
+        val = seconde%10
     numero = [0,0,0,0]
     nmb_bin = [0,0,0,0]
 
@@ -230,6 +229,12 @@ def connexion_bouton(sortie_bouton):
 
     pygame.draw.line(fenetre,couleur_ligne, pin_arduino, pin_bouton, 6)
     return
+
+def maj_heure():
+    heure = dt.datetime.now().hour
+    minute = dt.datetime.now().minute
+    seconde = dt.datetime.now().second
+    latence_mat
 
 ### Paramètre(s)
 
@@ -293,8 +298,6 @@ while True:
                 sortie_bouton = 0
         elif evenement.type == pygame.USEREVENT:
             sig_horloge = (sig_horloge + 1) % 2
-            if sig_horloge == 1:
-                variable_memorisee = (variable_memorisee + 1 ) % 10
         elif evenement.type == pygame.USEREVENT + 1:
             num_afficheur += 1
             num_afficheur = num_afficheur % 6
