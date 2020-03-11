@@ -22,9 +22,11 @@ ROUGE = (255, 0, 0)
 ### Variables Globales
 
 variable_memorisee = 0
-latence_mat = [[0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0],
-               [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], 
-               [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0]]
+compteur = 0
+latence_mat = [[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]
+                ,[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]
+                ,[0,0,0,0,0,0,0],[0,0,0,0,0,0,0]]
+tab_message = [0,1,2,2,3,7,4,3,5,2,6,7]
 
 
 
@@ -142,16 +144,18 @@ def composant_CD4511(entree):
     tdv[4] = [0,1,1,1,1,1,1]#w
     tdv[5] = [0,0,0,0,1,0,1]#r
     tdv[6] = [0,1,1,1,1,0,1]#d
-    # tdv[7] = [1,1,1,0,0,0,0]
-    # tdv[8] = [1,1,1,1,1,1,1]
-    # tdv[9] = [1,1,1,1,0,1,1]
+    tdv[7] = [0,0,0,0,0,0,0]# 
 
     nmb = 0
+    # print(entree)
 
-    for i in range(0,4):
-        nmb += entree[i] * 2**abs(i-3)
+    # for i in range(0,4):
+    #     nmb += entree[i] * 2**abs(i-3)
+    lettre_actuelle = (variable_memorisee + num_afficheur) % 12
+    lettre_affichee = tab_message[lettre_actuelle]
+    val = lettre_affichee
         
-    return np.array(tdv[nmb])
+    return np.array(tdv[val])
 
 def composant_CD4028(entree):
     nmb_bin = [0,0,0,0]
@@ -179,29 +183,18 @@ def composant_CD4028(entree):
 
 
 def sortie_memorisee(num_afficheur):
-    heure = dt.datetime.now().hour
-    minute = dt.datetime.now().minute
-    seconde = dt.datetime.now().second
-    val_num = num_afficheur
-    if val_num==0:
-        val = heure//10
-    elif val_num==1:
-        val = heure%10
-    elif val_num==2:
-        val = minute//10
-    elif val_num==3:
-        val = minute%10
-    elif val_num==4:
-        val = seconde//10
-    elif val_num==5:
-        val = seconde%10
+    global variable_memorisee
     numero = [0,0,0,0]
     nmb_bin = [0,0,0,0]
 
+    lettre_actuelle = (variable_memorisee + num_afficheur) % 11
+    lettre_affichee = tab_message[lettre_actuelle]
+    val = lettre_affichee
+
     for i in range (0,4):
         nmb_bin[i] = (val % 2)
-        numero[i] = (val_num % 2)
-        val_num = val_num // 2
+        numero[i] = (num_afficheur) % 2
+        num_afficheur = num_afficheur // 2
         val = val // 2
 
     numero.reverse()
@@ -218,7 +211,7 @@ def clique_bouton():
     
     if souris_pos[0] >= pos_centre_bouton[0]-rayon_bouton and souris_pos[0] <= pos_centre_bouton[0] + rayon_bouton:
         if souris_pos[1] >= pos_centre_bouton[1]-rayon_bouton and souris_pos[1] <= pos_centre_bouton[1] + rayon_bouton:
-            variable_memorisee = (variable_memorisee + 1) % 10
+            variable_memorisee = (variable_memorisee + 1) % 11
             return 1
     return 0
 
@@ -264,7 +257,7 @@ fenetre = pygame.display.set_mode(dimensions_fenetre)
 pygame.display.set_caption("Programme 7 segments")
 
 horloge = pygame.time.Clock()
-pygame.time.set_timer(pygame.USEREVENT, 480)
+pygame.time.set_timer(pygame.USEREVENT, 240)
 pygame.time.set_timer(pygame.USEREVENT+1,40)
 num_afficheur = 0
 
@@ -301,6 +294,10 @@ while True:
         elif evenement.type == pygame.USEREVENT + 1:
             num_afficheur += 1
             num_afficheur = num_afficheur % 6
+            if num_afficheur == 0 and compteur == 0:
+                variable_memorisee += 1 % 11
+            if num_afficheur == 0:
+                compteur = (compteur + 1) % 3
         
     sortie_bouton = 0
 
@@ -309,7 +306,7 @@ while True:
 
     fenetre.fill(couleur_fond)
 
-    sortie_CD4511 = composant_CD4511(sortie_memorisee(num_afficheur))
+    sortie_CD4511 = composant_CD4511(num_afficheur)
     latence_mat[num_afficheur] = sortie_CD4511
 
     sortie_CD4028 = composant_CD4028(sortie_memorisee(num_afficheur))
