@@ -41,9 +41,9 @@ def afficher_grille():
     return
 
 def generer_signaux(delta_t):
-    PERIODE_1 = 0.009
-    PERIODE_2 = 0.009
-    PERIODE_3 = 0.009
+    PERIODE_1 = 0.0045
+    PERIODE_2 = 0.0045
+    PERIODE_3 = 0.0045
     PERIODE_4 = 0.0045
 
     AMPL_1 = 5
@@ -68,10 +68,20 @@ def generer_signaux(delta_t):
                    2 * math.pi)
     a4 = math.fmod(a4 + delta_t * 2 * math.pi / PERIODE_4,
                    2 * math.pi)
+    if(math.cos(a1) >= 0):
+        signe_a1 = 1
+    else:
+        signe_a1 = 0
 
-    return (AMPL_1 * math.cos(a1),
-            AMPL_2 * math.cos(a2),
-            AMPL_3 * math.cos(a2) * math.cos(a3),
+    if(math.cos(a2) >= 0):
+        signe_a2 = 1
+    else:
+        signe_a2 = 0
+
+
+    return (AMPL_1 * signe_a1,
+            AMPL_2 * signe_a2,
+            AMPL_3 ,
             AMPL_4 * math.cos(a4))
 
 def acquisition(t):
@@ -159,7 +169,7 @@ gain_signaux = [ 20, 20, 20, 20 ]
 pygame.init()
 
 fenetre = pygame.display.set_mode(dimensions_fenetre)
-pygame.display.set_caption("Programme 4")
+pygame.display.set_caption("Programme 7")
 
 horloge = pygame.time.Clock()
 couleur_fond = BLEUCLAIR
