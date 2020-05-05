@@ -9,10 +9,17 @@ import sys
 
 # Constantes
 
+TAILLE_TRACE = 10000
+trace = [(0, 0)] * TAILLE_TRACE
+nb_trace = 0
+prochain_trace = 0
+
+
 BLEUCLAIR = (127, 191, 255)
 BLEU = (0, 0, 255)
 ROUGE = (255, 0, 0)
 NOIR = (0, 0, 0)
+GRIS = (115, 115, 115)
 
 K = 8.9876 * 1e9
 
@@ -20,16 +27,18 @@ A = 2
 B = 5
 C = 20
 
+a = 10
+
 
 MASSE_MOBILE = 1e-10
-
 charge_mobile = 1e-10
-
 mobile_est_present = False
 
 champs_elect_v = 10
-
 champs_magnetique = 1
+
+mode_cyclotron = False
+alpha = 0
 
 # Paramètres
 
@@ -54,6 +63,37 @@ def initialiser_mobile():
 
     return mobile
 
+def initialiser_trace():
+    global trace, nb_trace, prochain_trace
+
+    nb_trace = 0
+    prochain_trace = 0
+    trace = [0] * TAILLE_TRACE
+
+def ajouter_trace():
+    global trace, nb_trace, prochain_trace
+
+    if nb_trace < TAILLE_TRACE:
+        nb_trace += 1
+
+    trace[prochain_trace] = (mobile[0], mobile[1])
+    prochain_trace = (prochain_trace+1)%TAILLE_TRACE
+
+def afficher_trace():
+    for i in range(0, nb_trace):
+        pygame.draw.circle(fenetre, GRIS, (int(trace[i][0]), int(trace[i][1])), 4, 0)
+
+def calculer_champ_cyclotron(dt):
+    global alpha, champs_elect_v
+
+    T = 2 * math.pi * MASSE_MOBILE / (charge_mobile * champs_magnetique)
+    
+    alpha += 2 * math.pi * dt / T
+    alpha = math.fmod(alpha, 2 * math.pi)
+
+    champs_elect_v = a * math.sin(alpha)
+
+
 def creer_mobile(charge,position):
     global mobile_est_present, mobile, temps_prec
 
@@ -72,9 +112,20 @@ def mettre_a_jour_mobile(t):
     if v_champ==None:
         mobile_est_present=False
         return
-    force = [v_champ[0] * mobile[4], v_champ[1] * mobile[4]]
-    acceleration = [force[0]/MASSE_MOBILE, force[1]/MASSE_MOBILE]
+
     delta_t = t - temps_prec
+
+    if mode_cyclotron:
+        calculer_champ_cyclotron(delta_t)
+
+    norme_vitesse = distance(mobile[2], mobile[3], 0, 0)
+    force_champ_magnetique = mobile[4] * norme_vitesse * champs_magnetique
+    angle_vitesse = math.atan2(mobile[3], mobile[2])
+
+    force = [v_champ[0] * mobile[4] + force_champ_magnetique * math.cos(angle_vitesse+math.pi/2), v_champ[1] * mobile[4] + force_champ_magnetique * math.sin(angle_vitesse+math.pi/2)]    
+    
+    acceleration = [force[0]/MASSE_MOBILE, force[1]/MASSE_MOBILE]
+    
 
     mobile[2]+= acceleration[0] * delta_t
     mobile[3]+= acceleration[1] * delta_t
@@ -83,21 +134,13 @@ def mettre_a_jour_mobile(t):
     mobile[1]+= mobile[3] * delta_t
     temps_prec = t
 
-# def calculer_energie_potentiel(x, y, charge):
-#     energ_pot = 0
-#     for l in objets:
-#         if x!=l[0] or y!=l[1]:
-#             energ_pot += K * (charge * l[2])/(distance(x, y, l[0], l[1]))
-#         else:
-#             return 0
-#     return energ_pot
-
 def calculer_potentiel(x, y):
     if mobile_est_present:
         potent = calculer_energie_potentiel(x, y, 1) + K * mobile[4]/distance(x, y, mobile[0], mobile[1])
     else:
         potent = calculer_energie_potentiel(x, y, 1)
     return potent
+
 
 # Dessin
 
@@ -107,8 +150,6 @@ def dessiner_mobile():
     else:
         couleur = NOIR
     
-    print(mobile)
-
     pygame.draw.circle(fenetre,couleur, (int(mobile[0]), int(mobile[1])), 10, 4)
 
 def affichage_tableau():
@@ -146,6 +187,7 @@ pygame.display.set_caption("Programme 11")
 
 horloge = pygame.time.Clock()
 couleur_fond = BLEUCLAIR
+initialiser_trace()
 
 mobile = []
 
@@ -172,18 +214,31 @@ while True:
                 creer_mobile(-1e-7,pygame.mouse.get_pos())
             elif evenement.key == pygame.K_UP:
                 champs_elect_v += 1
+                mode_cyclotron = False
             elif evenement.key == pygame.K_DOWN:
                 champs_elect_v -= 1
+                mode_cyclotron = False
             elif evenement.key == pygame.K_SPACE:
                 mobile = initialiser_mobile()
+                initialiser_trace()
+                mode_cyclotron = False
+            elif evenement.key == pygame.K_PAGEUP and champs_magnetique < 1:
+                champs_magnetique += 0.5
+            elif evenement.key == pygame.K_PAGEDOWN and champs_magnetique > -1:
+                champs_magnetique -= 0.5
+            elif evenement.key == pygame.K_c:
+                mode_cyclotron = True
 
     fenetre.fill(couleur_fond)
     
     for t in range(temps_precedent, temps_maintenant - 1, 1):
         mettre_a_jour_mobile(t/1000)
-        
+    
+    ajouter_trace()
+
     if mobile_est_present:
         dessiner_mobile()
+        afficher_trace()
     affichage_tableau()
     temps_precedent = temps_maintenant
     
